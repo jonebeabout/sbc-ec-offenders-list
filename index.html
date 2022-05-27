@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> SBC EC Abusers List </title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="./stylesheet.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SBC EC Abusers List</h1>
+        <br />
+        <input type="text" id="searchbar" onkeyup="searchbarFunc()" placeholder="Keyword Search">
+        <div id="listcontainer">
+        </div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+fetch_data();
+
+async function fetch_data() {
+    const response = await fetch("./list.json", {});
+    const json = await response.json();
+    console.log(json)
+    return convertJsontoHtmlTable(json.list)
+}
+
+function convertJsontoHtmlTable(list)
+{
+
+    //Getting value for table header
+    var tablecolumns = [];
+    for (var i = 0; i < list.length; i++) {
+        for (var key in list[i]) {
+            if (tablecolumns.indexOf(key) === -1) {
+                tablecolumns.push(key);
+            }
+        }
+    }
+
+    //Creating html table and adding class to it
+    var tablelist = document.createElement("table");
+    tablelist.classList.add("table");
+    tablelist.classList.add("table-striped");
+    tablelist.classList.add("table-bordered");
+    tablelist.classList.add("table-hover");
+    tablelist.id = "tablelist";
+
+    //Creating header of the HTML table using
+    //tr
+    var tr = tablelist.insertRow(-1);
+
+    for (var i = 0; i < tablecolumns.length; i++) {
+        //header
+        var th = document.createElement("th");
+        th.setAttribute("onclick","sortTable("+i+")")
+        th.innerHTML = tablecolumns[i];
+        tr.appendChild(th);
+    }
+
+    // Add JSON data in table as tr or rows
+    for (var i = 0; i < list.length; i++) {
+        tr = tablelist.insertRow(-1);
+        for (var j = 0; j < tablecolumns.length; j++) {
+            var tabCell = tr.insertCell(-1);
+            if (tablecolumns[j] === "News Reports") {
+                var links = ""
+                if (list[i][tablecolumns[j]].length > 0) {
+                    for (var k = 0; k < list[i][tablecolumns[j]].length; k++) {
+                        links += '<a href='+list[i][tablecolumns[j]][k]+' target="_blank">'+(k+1)+"</a></br>"
+                    }
+                }
+                tabCell.innerHTML = links
+            } else {
+                tabCell.innerHTML = list[i][tablecolumns[j]];
+            }
+        }
+    }
+
+    //Final step , append html table to the container div
+    var listcontainer = document.getElementById("listcontainer");
+    listcontainer.innerHTML = "";
+    listcontainer.appendChild(tablelist);
+}
+
+function sortTable(n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("tablelist");
+  switching = true;
+  //Set the sorting direction to ascending:
+  dir = "asc"; 
+  /*Make a loop that will continue until
+  no switching has been done:*/
+  while (switching) {
+    //start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /*Loop through all table rows (except the
+    first, which contains table headers):*/
+    for (i = 1; i < (rows.length - 1); i++) {
+      //start by saying there should be no switching:
+      shouldSwitch = false;
+      /*Get the two elements you want to compare,
+      one from current row and one from the next:*/
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      /*check if the two rows should switch place,
+      based on the direction, asc or desc:*/
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /*If a switch has been marked, make the switch
+      and mark that a switch has been done:*/
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      //Each time a switch is done, increase this count by 1:
+      switchcount ++;      
+    } else {
+      /*If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again.*/
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+
+function searchbarFunc() {
+  // Declare variables
+  var input, filter, table, tr, td, i, txtValue;
+  input = document.getElementById("searchbar");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("tablelist");
+  cols = table.rows[0].cells.length;
+  tr = table.getElementsByTagName("tr");
+
+  // Loop through all table rows, and hide those who don't match the search query
+  for (i = 0; i < tr.length; i++) {
+    txtValue = ""
+    for (j = 0; j < cols; j++) {
+        td = tr[i].getElementsByTagName("td")[j];
+        if(td) {
+            txtValue += td.textContent || td.innerText;
+        }
+    }
+    if (txtValue) {
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+}
+</script>
