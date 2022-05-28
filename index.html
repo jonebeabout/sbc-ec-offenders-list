@@ -90,6 +90,7 @@ function convertJsontoHtmlTable(list)
 function sortTable(n) {
   var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
   table = document.getElementById("tablelist");
+  
   switching = true;
   //Set the sorting direction to ascending:
   dir = "asc"; 
@@ -99,8 +100,16 @@ function sortTable(n) {
     //start by saying: no switching is done:
     switching = false;
     rows = table.rows;
-    /*Loop through all table rows (except the
+    /*Loop through all table rows (except the ↑ ↓ 
     first, which contains table headers):*/
+    for (i = 0; i < rows[0].getElementsByTagName('th').length; i++) {
+        rows[0].getElementsByTagName('th')[i].className = '';
+    }
+    if (dir === 'asc') {
+        rows[0].getElementsByTagName('th')[n].classList.add('headerSortUp')
+    } else {
+        rows[0].getElementsByTagName('th')[n].classList.add('headerSortDown')
+    }
     for (i = 1; i < (rows.length - 1); i++) {
       //start by saying there should be no switching:
       shouldSwitch = false;
